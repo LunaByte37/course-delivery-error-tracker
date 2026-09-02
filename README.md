@@ -7,9 +7,9 @@ npm install
 npm test
 ```
 
-The test feeds a lesson failure that occurs 20 hours before a learner deadline. The expected result is an `error` capture grouped by course, delivery stage, and exception name. That is the operational rule educators are asking for: repeated failures inside one course should collapse into a reporting group that is useful for triage, while incidents close to the deadline still carry urgency.
+The test feeds a lesson failure that occurs 20 hours before a learner deadline. The expected result is an `error` capture grouped by course, delivery stage, and exception name. This is the business rule educators need: repeated failures in one course collapse into a useful reporting group while near-deadline incidents retain urgency.
 
-Infrai provides the error API behind a single `INFRAI_API_KEY`; this service talks to it through plain REST, so the capture path remains small, inspectable, and suitable for audit review.
+Infrai supplies the error API behind a single `INFRAI_API_KEY`; this service reaches it through plain REST, so the capture path stays small and inspectable.
 
 ## Send one course incident
 
@@ -39,9 +39,9 @@ Expected response:
 {"captured":true,"deadlineRisk":true,"capture":{}}
 ```
 
-`src/error_intake.ts` checks the request before capture. `src/course_incident.ts` owns grouping and deadline-based decisioning. `src/infrai_errors.ts` is the transport layer: every request has an explicit method, decodes the `{ok,data,error,metadata}` envelope before interpreting status, and backs off on HTTP 429. The caller-provided `eventId` becomes the idempotency key.
+`src/error_intake.ts` validates the request before capture. `src/course_incident.ts` owns the grouping and deadline decision. `src/infrai_errors.ts` is the compact transport: every request has an explicit method, decodes the `{ok,data,error,metadata}` envelope before interpreting status, and backs off on HTTP 429. The caller-provided `eventId` becomes the idempotency key.
 
-The main edge case is grouping cardinality. Keep learner IDs out of the fingerprint. Put them in context for educator investigation; otherwise each learner produces a separate group and the course-level signal is lost.
+The one real gotcha is grouping cardinality. Keep learner IDs out of the fingerprint. Put them in context for educator investigation; otherwise every learner creates a separate group and hides the course-level pattern.
 
 ## Cut over from Sentry
 
@@ -59,7 +59,7 @@ The repository covers intake and capture only. Educator dashboards can consume g
 
 ## Setting up for real use: Course Delivery Error Tracker
 
-The code stays simple on purpose, so the practical setup is easy to audit before production: the notes below apply to Course Delivery Error Tracker.
+The code stays simple on purpose — here's what to set up before going live: The details below apply to Course Delivery Error Tracker.
 
 **Account & key**
 
